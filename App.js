@@ -1,48 +1,49 @@
-const express = require('express');
-const http = require('http');
-const socketIo = require('socket.io');
-const cors = require('cors');
-
+const express = require("express");
 const app = express();
-const server = http.createServer(app);
-const io = socketIo(server, {
-  cors: {
-    origin: "https://vc-frontend-phi.vercel.app", // Allow only your frontend origin
-    methods: ["GET", "POST"],
-    credentials: true
-  }
+const httpServer = require('http').createServer(app);
+
+// Socket.IO
+const io = require('socket.io')(httpServer, {
+    cors: {
+        origin: "https://ravanchatroom.netlify.app", // specific origin you want to give access to,
+        methods: ["GET", "POST"], // allow only specified methods
+        allowedHeaders: ["my-custom-header"], // allow only specified headers
+        credentials: true // allow credentials (if needed)
+    }
 });
 
-app.use(cors({
-  origin: "https://vc-frontend-phi.vercel.app", // Allow only your frontend origin
-  methods: ["GET", "POST"],
-  credentials: true
-}));
+// Store connected users
+const connectedUsers = {};
 
+// Event handling for socket connection
 io.on('connection', (socket) => {
-  console.log('a user connected');
+    console.log('A user connected');
 
-  socket.on('disconnect', () => {
-    console.log('user disconnected');
-  });
+    // Handle disconnect
+    socket.on('disconnect', () => {
+        console.log('User disconnected');
+        // Remove user from connected users list
+        delete connectedUsers[socket.id];
+    });
 
-  socket.on('offer', (offer) => {
-    console.log('Broadcasting offer');
-    socket.broadcast.emit('offer', offer);
-  });
+    // Handle chat message event
+    socket.on('message', (msg) => {
+        // Emit the message to all connected clients along with sender's socket ID
+        io.emit('message', { sender: socket.id, text: msg });
+    });
 
-  socket.on('answer', (answer) => {
-    console.log('Broadcasting answer');
-    socket.broadcast.emit('answer', answer);
-  });
+    // Store user information when they connect
+    socket.on('user', (user) => {
+        console.log('User details received:', user);
+        // Store user information with their socket ID
+        connectedUsers[socket.id] = user;
+    });
 
-  socket.on('candidate', (candidate) => {
-    console.log('Broadcasting candidate');
-    socket.broadcast.emit('candidate', candidate);
-  });
+    console.log("last line --------------");
 });
 
-const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => {
-  console.log(`listening on *:${PORT}`);
+// Start the server
+const PORT = process.env.PORT || 8080;
+httpServer.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
 });
