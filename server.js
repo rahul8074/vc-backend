@@ -17,14 +17,17 @@ io.on('connection', (socket) => {
   });
 
   socket.on('offer', (offer) => {
+    console.log('Broadcasting offer');
     socket.broadcast.emit('offer', offer);
   });
 
   socket.on('answer', (answer) => {
+    console.log('Broadcasting answer');
     socket.broadcast.emit('answer', answer);
   });
 
   socket.on('candidate', (candidate) => {
+    console.log('Broadcasting candidate');
     socket.broadcast.emit('candidate', candidate);
   });
 });
