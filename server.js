@@ -2,7 +2,6 @@ const express = require('express');
 const http = require('http');
 const socketIo = require('socket.io');
 const cors = require('cors');
-const path = require('path');
 
 const app = express();
 const server = http.createServer(app);
@@ -19,8 +18,6 @@ app.use(cors({
   methods: ["GET", "POST"],
   credentials: true
 }));
-
-app.use(express.static(path.join(__dirname, 'client/build')));
 
 io.on('connection', (socket) => {
   console.log('a user connected');
@@ -45,10 +42,7 @@ io.on('connection', (socket) => {
   });
 });
 
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'client/build', 'index.html'));
-});
-
-server.listen(3000, () => {
-  console.log('listening on *:3000');
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, () => {
+  console.log(`listening on *:${PORT}`);
 });
