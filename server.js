@@ -1,15 +1,24 @@
 const express = require('express');
 const http = require('http');
 const socketIo = require('socket.io');
-const path = require('path');
 const cors = require('cors');
+const path = require('path');
 
 const app = express();
 const server = http.createServer(app);
-const io = socketIo(server);
+const io = socketIo(server, {
+  cors: {
+    origin: "https://vc-frontend-phi.vercel.app", // Allow only your frontend origin
+    methods: ["GET", "POST"],
+    credentials: true
+  }
+});
 
-// Enable CORS from all origins
-app.use(cors());
+app.use(cors({
+  origin: "https://vc-frontend-phi.vercel.app", // Allow only your frontend origin
+  methods: ["GET", "POST"],
+  credentials: true
+}));
 
 app.use(express.static(path.join(__dirname, 'client/build')));
 
